@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>42nd QRF Battalion — Enlistment Application</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="main-page">
+
+    <!-- ===== NAVIGATION ===== -->
+    <nav class="navbar navbar-scrolled">
+        <div class="nav-container">
+            <a href="Main_Page.html" class="nav-logo">
+                <img src="42nd_Logo.png" alt="42nd QRF Battalion Logo" class="logo-img">
+                <span class="logo-text">42<sup>ND</sup> QRF BN</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="Main_Page.html#home" class="nav-link">Home</a></li>
+                <li><a href="Main_Page.html#about" class="nav-link">About</a></li>
+                <li><a href="Main_Page.html#operations" class="nav-link">Operations</a></li>
+                <li><a href="Application_Page.html" class="nav-link nav-link-cta active">Enlist Now</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ===== APPLICATION HEADER ===== -->
+    <header class="app-header">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">// ENLISTMENT</span>
+                <h1 class="section-title">Application Form</h1>
+                <div class="section-divider"><span class="divider-diamond"></span></div>
+            </div>
+            <p class="app-intro">Fill out the form below to begin your enlistment process with the 42nd QRF Battalion. All fields are required. Applications are reviewed by our recruitment staff.</p>
+        </div>
+    </header>
+
+    <!-- ===== APPLICATION FORM ===== -->
+    <section class="section section-dark">
+        <div class="container">
+            <form class="app-form" id="applicationForm">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="callsign">Name / Callsign</label>
+                        <input type="text" id="callsign" name="callsign" placeholder="What should we call you?" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" name="age" placeholder="Must be 18+" min="18" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timezone">Timezone</label>
+                        <select id="timezone" name="timezone" required>
+                            <option value="" disabled selected>Select your timezone</option>
+                            <option value="EST">Eastern (EST/EDT)</option>
+                            <option value="CST">Central (CST/CDT)</option>
+                            <option value="MST">Mountain (MST/MDT)</option>
+                            <option value="PST">Pacific (PST/PDT)</option>
+                            <option value="GMT">GMT / UTC</option>
+                            <option value="CET">Central European (CET/CEST)</option>
+                            <option value="AEST">Australian Eastern (AEST/AEDT)</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="steam_name">Steam Name</label>
+                        <input type="text" id="steam_name" name="steam_name" placeholder="Your Steam display name" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="experience">Milsim / Arma 3 Experience</label>
+                    <textarea id="experience" name="experience" rows="4" placeholder="Tell us about your experience with Arma 3 and any prior milsim units you've been part of. No experience required — just be honest." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="availability">Availability</label>
+                    <textarea id="availability" name="availability" rows="3" placeholder="What days and times are you typically available to attend operations and training?" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">Why do you want to join the 42nd?</label>
+                    <textarea id="reason" name="reason" rows="4" placeholder="What draws you to the 42nd QRF Battalion? What are you looking for in a unit?" required></textarea>
+                </div>
+
+                <div class="form-disclaimer">
+                    <p>By submitting this application, you confirm that you meet all listed requirements and agree to follow the 42nd QRF Battalion's rules and chain of command.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large form-submit">Submit Application</button>
+
+                <!-- Status messages -->
+                <div class="form-status" id="formStatus"></div>
+            </form>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 42nd QRF Battalion. All Rights Reserved.</p>
+                <p>This website is not affiliated with Bohemia Interactive.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const form = document.getElementById('applicationForm');
+        const status = document.getElementById('formStatus');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('.form-submit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'SUBMITTING...';
+            status.className = 'form-status';
+            status.textContent = '';
+
+            const data = {
+                callsign: form.callsign.value.trim(),
+                age: form.age.value,
+                timezone: form.timezone.value,
+                steam_name: form.steam_name.value.trim(),
+                experience: form.experience.value.trim(),
+                availability: form.availability.value.trim(),
+                reason: form.reason.value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    status.className = 'form-status form-status-success';
+                    status.textContent = result.message;
+                    form.reset();
+                } else {
+                    status.className = 'form-status form-status-error';
+                    status.textContent = result.message;
+                }
+            } catch (err) {
+                status.className = 'form-status form-status-error';
+                status.textContent = 'Connection error. Make sure the server is running.';
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'SUBMIT APPLICATION';
+        });
+    </script>
+</body>
+</html>
