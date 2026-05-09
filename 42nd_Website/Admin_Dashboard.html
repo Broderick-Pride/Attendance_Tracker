@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — 42nd QRF BN</title>
+    <title>Admin Dashboard — 42nd Airborne Div</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -59,6 +59,31 @@
             font-size: 0.78rem;
             color: rgba(255,255,255,0.35);
         }
+        .btn-sync {
+            font-size: 0.72rem;
+            padding: 0.35rem 0.75rem;
+            border-color: rgba(91,5,138,0.4);
+            color: rgba(255,255,255,0.6);
+            transition: all 0.15s;
+        }
+        .btn-sync:hover:not(:disabled) { border-color: rgba(91,5,138,0.8); color: #fff; }
+        .btn-sync:disabled { opacity: 0.4; cursor: default; }
+        .sync-toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.7rem 1.1rem;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .sync-toast.show { opacity: 1; }
+        .sync-toast.ok  { background: rgba(76,175,80,0.15); border: 1px solid rgba(76,175,80,0.3); color: #4caf50; }
+        .sync-toast.err { background: rgba(244,67,54,0.12); border: 1px solid rgba(244,67,54,0.3); color: #f44336; }
         .dash-container {
             max-width: 1280px;
             margin: 0 auto;
@@ -209,15 +234,17 @@
 
     <div class="dash-header">
         <div class="dash-header-left">
-            <img src="42nd_Logo.png" alt="42nd QRF BN" class="dash-logo">
+            <img src="42nd_Logo.png" alt="42nd Airborne Div" class="dash-logo">
             <div class="dash-title">
                 Applications Dashboard
-                <span>42nd QRF Battalion — Recruiter Panel</span>
+                <span>42nd Airborne Division — Recruiter Panel</span>
             </div>
         </div>
         <div class="dash-header-right">
             <span class="dash-admin-name" id="adminName"></span>
-            <button id="logoutBtn" class="btn">Logout</button>
+            <button id="syncFromBtn" class="btn btn-sync" title="Import new rows from Google Forms tab">Sync from Sheet</button>
+            <button id="syncToBtn"   class="btn btn-sync" title="Push all DB records to Applications DB tab">Sync to Sheet</button>
+            <button id="logoutBtn"   class="btn">Logout</button>
         </div>
     </div>
 
@@ -425,6 +452,51 @@
 
         loadAdminName();
         loadApps();
+
+        // ── Google Sheets sync ──────────────────────────────────────────
+        let toastTimer = null;
+        const toast = document.createElement('div');
+        toast.className = 'sync-toast';
+        document.body.appendChild(toast);
+
+        function showToast(msg, isError) {
+            clearTimeout(toastTimer);
+            toast.textContent = msg;
+            toast.className = 'sync-toast show ' + (isError ? 'err' : 'ok');
+            toastTimer = setTimeout(() => { toast.className = 'sync-toast'; }, 4000);
+        }
+
+        async function runSync(endpoint, btn) {
+            btn.disabled = true;
+            const orig = btn.textContent;
+            btn.textContent = 'Working…';
+            try {
+                const res = await fetch(endpoint, { method: 'POST' });
+                if (res.status === 401) { window.location.href = 'Admin_Login.html'; return; }
+                const data = await res.json();
+                if (data.success) {
+                    const detail = data.imported != null
+                        ? `Imported ${data.imported}, skipped ${data.skipped}`
+                        : `Synced ${data.synced} records`;
+                    showToast(detail, false);
+                    if (data.imported > 0) loadApps();
+                } else {
+                    showToast(data.message || 'Sync failed', true);
+                }
+            } catch {
+                showToast('Connection error', true);
+            } finally {
+                btn.textContent = orig;
+                btn.disabled = false;
+            }
+        }
+
+        document.getElementById('syncFromBtn').addEventListener('click', () =>
+            runSync('/api/sync-from-sheet', document.getElementById('syncFromBtn'))
+        );
+        document.getElementById('syncToBtn').addEventListener('click', () =>
+            runSync('/api/sync-to-sheet', document.getElementById('syncToBtn'))
+        );
     </script>
 </body>
 </html>
