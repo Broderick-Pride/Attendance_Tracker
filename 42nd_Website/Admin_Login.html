@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Login — 42nd QRF BN</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body.admin-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary, #0a0b0d);
+        }
+        .admin-login-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem 2rem;
+            background: rgba(15, 15, 20, 0.95);
+            border: 1px solid rgba(91, 5, 138, 0.3);
+            border-radius: 4px;
+            box-shadow: 0 0 60px rgba(91, 5, 138, 0.08);
+        }
+        .admin-login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .admin-login-logo {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+        }
+        .admin-login-unit {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+        .admin-login-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #c9a84c;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .admin-divider {
+            border: none;
+            border-top: 1px solid rgba(91, 5, 138, 0.35);
+            margin: 1.5rem 0;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 0.4rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 3px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(91, 5, 138, 0.6);
+            background: rgba(255,255,255,0.06);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 0.85rem;
+            margin-top: 0.5rem;
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.95rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .login-status {
+            margin-top: 0.75rem;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            min-height: 1.2em;
+            transition: color 0.2s;
+        }
+        .login-status.success { color: #4caf50; }
+        .login-status.error   { color: #f44336; }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.25);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: rgba(255,255,255,0.55); }
+    </style>
+</head>
+<body class="admin-page">
+    <div class="scanlines"></div>
+
+    <div class="admin-login-card">
+        <div class="admin-login-header">
+            <img src="42nd_Logo.png" alt="42nd QRF Battalion" class="admin-login-logo">
+            <div class="admin-login-unit">42nd QRF Battalion</div>
+            <div class="admin-login-title">Recruiter Access</div>
+        </div>
+        <hr class="admin-divider">
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-login">Sign In</button>
+            <div id="status" class="login-status"></div>
+        </form>
+    </div>
+    <a href="Main_Page.html" class="back-link">← Return to Main Site</a>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const statusEl = document.getElementById('status');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            statusEl.textContent = '';
+            statusEl.className = 'login-status';
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await fetch('/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    statusEl.className = 'login-status success';
+                    statusEl.textContent = 'Authentication successful. Redirecting...';
+                    window.location.href = 'Admin_Dashboard.html';
+                } else {
+                    statusEl.className = 'login-status error';
+                    statusEl.textContent = result.message || 'Login failed.';
+                }
+            } catch {
+                statusEl.className = 'login-status error';
+                statusEl.textContent = 'Connection error. Is the server running?';
+            }
+        });
+    </script>
+</body>
+</html>

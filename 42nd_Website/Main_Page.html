@@ -6,6 +6,24 @@
     <title>42nd QRF Battalion — Home</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .nav-link-staff {
+            font-size: 0.7rem !important;
+            opacity: 0.4;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.25rem 0.6rem !important;
+            border-radius: 3px;
+            letter-spacing: 0.05em;
+            transition: opacity 0.2s;
+        }
+        .nav-link-staff:hover { opacity: 0.8 !important; }
+        .footer-staff-link {
+            opacity: 0.4;
+            font-size: 0.78rem !important;
+            transition: opacity 0.2s;
+        }
+        .footer-staff-link:hover { opacity: 0.8 !important; }
+    </style>
 </head>
 <body class="main-page">
 
@@ -28,6 +46,7 @@
                 <li><a href="#operations" class="nav-link">Operations</a></li>
                 <li><a href="#media" class="nav-link">Media</a></li>
                 <li><a href="#enlist" class="nav-link nav-link-cta">Enlist Now</a></li>
+                <li><a href="/admin" class="nav-link nav-link-staff">Staff Login</a></li>
             </ul>
         </div>
     </nav>
@@ -343,6 +362,7 @@
                     <a href="#structure">Structure</a>
                     <a href="#operations">Operations</a>
                     <a href="#enlist">Enlist</a>
+                    <a href="/admin" class="footer-staff-link">Staff Login</a>
                 </div>
                 <div class="footer-links">
                     <h4>Connect</h4>

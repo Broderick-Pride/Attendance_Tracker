@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — 42nd QRF BN</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body.dashboard-page {
+            background: #0a0b0d;
+            min-height: 100vh;
+            padding: 0;
+        }
+        .dash-header {
+            background: rgba(10, 11, 13, 0.98);
+            border-bottom: 1px solid rgba(91, 5, 138, 0.3);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .dash-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+        .dash-logo {
+            height: 38px;
+            object-fit: contain;
+        }
+        .dash-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #fff;
+            line-height: 1.2;
+        }
+        .dash-title span {
+            display: block;
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.1em;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+        .dash-header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .dash-admin-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.35);
+        }
+        .dash-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 4px;
+            padding: 1rem 1.25rem;
+        }
+        .stat-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 0.4rem;
+        }
+        .stat-value {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2.2rem;
+            color: #fff;
+            line-height: 1;
+        }
+        .stat-card.pending  .stat-value { color: #f0a500; }
+        .stat-card.approved .stat-value { color: #4caf50; }
+        .stat-card.rejected .stat-value { color: #f44336; }
+        .filter-tabs {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .filter-tab {
+            padding: 0.38rem 1rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 3px;
+            color: rgba(255,255,255,0.4);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .filter-tab:hover { border-color: rgba(91,5,138,0.5); color: #fff; }
+        .filter-tab.active { background: rgba(91,5,138,0.2); border-color: rgba(91,5,138,0.6); color: #fff; }
+        .apps-table-wrap {
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 4px;
+        }
+        .apps-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.81rem;
+        }
+        .apps-table th {
+            background: rgba(255,255,255,0.03);
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.35);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            white-space: nowrap;
+        }
+        .apps-table td {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.8);
+            vertical-align: top;
+        }
+        .apps-table tr:last-child td { border-bottom: none; }
+        .apps-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .id-cell { color: rgba(255,255,255,0.25) !important; font-size: 0.72rem !important; }
+        .date-cell { white-space: nowrap; color: rgba(255,255,255,0.35) !important; font-size: 0.76rem !important; }
+        .text-cell { max-width: 180px; color: rgba(255,255,255,0.5) !important; }
+        .status-badge {
+            display: inline-block;
+            padding: 0.18rem 0.55rem;
+            border-radius: 2px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .status-pending  { background: rgba(240,165,0,0.12);  color: #f0a500; }
+        .status-approved { background: rgba(76,175,80,0.12);  color: #4caf50; }
+        .status-rejected { background: rgba(244,67,54,0.12);  color: #f44336; }
+        .action-btns { display: flex; gap: 0.3rem; }
+        .action-btn {
+            padding: 0.22rem 0.5rem;
+            border: 1px solid;
+            border-radius: 2px;
+            font-size: 0.66rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            cursor: pointer;
+            background: transparent;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+        .action-btn.approve { border-color: rgba(76,175,80,0.4); color: #4caf50; }
+        .action-btn.approve:hover:not(:disabled) { background: rgba(76,175,80,0.12); }
+        .action-btn.reject  { border-color: rgba(244,67,54,0.4); color: #f44336; }
+        .action-btn.reject:hover:not(:disabled)  { background: rgba(244,67,54,0.12); }
+        .action-btn.reset   { border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.35); }
+        .action-btn.reset:hover:not(:disabled)   { background: rgba(255,255,255,0.05); }
+        .action-btn:disabled { opacity: 0.25; cursor: default; }
+        .dash-message {
+            padding: 0.85rem 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.83rem;
+        }
+        .dash-message.error { background: rgba(244,67,54,0.08); color: #f44336; border: 1px solid rgba(244,67,54,0.2); }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255,255,255,0.18);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body class="dashboard-page">
+    <div class="scanlines"></div>
+
+    <div class="dash-header">
+        <div class="dash-header-left">
+            <img src="42nd_Logo.png" alt="42nd QRF BN" class="dash-logo">
+            <div class="dash-title">
+                Applications Dashboard
+                <span>42nd QRF Battalion — Recruiter Panel</span>
+            </div>
+        </div>
+        <div class="dash-header-right">
+            <span class="dash-admin-name" id="adminName"></span>
+            <button id="logoutBtn" class="btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="dash-container">
+        <div id="dashMessage"></div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Total</div>
+                <div class="stat-value" id="statTotal">—</div>
+            </div>
+            <div class="stat-card pending">
+                <div class="stat-label">Pending</div>
+                <div class="stat-value" id="statPending">—</div>
+            </div>
+            <div class="stat-card approved">
+                <div class="stat-label">Approved</div>
+                <div class="stat-value" id="statApproved">—</div>
+            </div>
+            <div class="stat-card rejected">
+                <div class="stat-label">Rejected</div>
+                <div class="stat-value" id="statRejected">—</div>
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">All</button>
+            <button class="filter-tab" data-filter="pending">Pending</button>
+            <button class="filter-tab" data-filter="approved">Approved</button>
+            <button class="filter-tab" data-filter="rejected">Rejected</button>
+        </div>
+
+        <div class="apps-table-wrap">
+            <table class="apps-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Callsign</th>
+                        <th>Age</th>
+                        <th>Timezone</th>
+                        <th>Steam Name</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                        <th>Experience</th>
+                        <th>Reason to Join</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="appsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allApps = [];
+        let currentFilter = 'all';
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = String(str);
+            return d.innerHTML;
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent    = allApps.length;
+            document.getElementById('statPending').textContent  = allApps.filter(a => (a.status || 'pending') === 'pending').length;
+            document.getElementById('statApproved').textContent = allApps.filter(a => a.status === 'approved').length;
+            document.getElementById('statRejected').textContent = allApps.filter(a => a.status === 'rejected').length;
+        }
+
+        function renderTable() {
+            const filtered = currentFilter === 'all'
+                ? allApps
+                : allApps.filter(a => (a.status || 'pending') === currentFilter);
+            const tbody = document.getElementById('appsBody');
+            tbody.innerHTML = '';
+
+            if (!filtered.length) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 10;
+                td.innerHTML = `<div class="empty-state">No ${currentFilter === 'all' ? '' : currentFilter + ' '}applications found.</div>`;
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                return;
+            }
+
+            filtered.forEach(a => {
+                const status = a.status || 'pending';
+                const date = a.submitted_at
+                    ? new Date(a.submitted_at.endsWith('Z') ? a.submitted_at : a.submitted_at + 'Z')
+                        .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    : '—';
+
+                const tr = document.createElement('tr');
+
+                const idTd = document.createElement('td');
+                idTd.className = 'id-cell';
+                idTd.textContent = a.id;
+
+                const callsignTd = document.createElement('td');
+                const strong = document.createElement('strong');
+                strong.textContent = a.callsign;
+                callsignTd.appendChild(strong);
+
+                const ageTd = document.createElement('td');
+                ageTd.textContent = a.age;
+
+                const tzTd = document.createElement('td');
+                tzTd.textContent = a.timezone;
+
+                const steamTd = document.createElement('td');
+                steamTd.textContent = a.steam_name;
+
+                const dateTd = document.createElement('td');
+                dateTd.className = 'date-cell';
+                dateTd.textContent = date;
+
+                const statusTd = document.createElement('td');
+                statusTd.innerHTML = `<span class="status-badge status-${esc(status)}">${esc(status)}</span>`;
+
+                const expTd = document.createElement('td');
+                expTd.className = 'text-cell';
+                expTd.title = a.experience;
+                expTd.textContent = a.experience.length > 80 ? a.experience.substring(0, 80) + '…' : a.experience;
+
+                const reasonTd = document.createElement('td');
+                reasonTd.className = 'text-cell';
+                reasonTd.title = a.reason;
+                reasonTd.textContent = a.reason.length > 80 ? a.reason.substring(0, 80) + '…' : a.reason;
+
+                const actionTd = document.createElement('td');
+                actionTd.innerHTML = `
+                    <div class="action-btns">
+                        <button class="action-btn approve" data-id="${a.id}" data-status="approved" ${status === 'approved' ? 'disabled' : ''}>Approve</button>
+                        <button class="action-btn reject"  data-id="${a.id}" data-status="rejected" ${status === 'rejected' ? 'disabled' : ''}>Reject</button>
+                        <button class="action-btn reset"   data-id="${a.id}" data-status="pending"  ${status === 'pending'  ? 'disabled' : ''}>Pending</button>
+                    </div>`;
+
+                tr.append(idTd, callsignTd, ageTd, tzTd, steamTd, dateTd, statusTd, expTd, reasonTd, actionTd);
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function setStatus(id, status) {
+            try {
+                const res = await fetch(`/api/applications/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (res.status === 401) { window.location.href = 'Admin_Login.html'; return; }
+                if (!res.ok) return;
+                const app = allApps.find(a => a.id === id);
+                if (app) app.status = status;
+                updateStats();
+                renderTable();
+            } catch { /* network error — ignore */ }
+        }
+
+        document.getElementById('appsBody').addEventListener('click', (e) => {
+            const btn = e.target.closest('.action-btn');
+            if (!btn || btn.disabled) return;
+            setStatus(Number(btn.dataset.id), btn.dataset.status);
+        });
+
+        document.querySelectorAll('.filter-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderTable();
+            });
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/admin/logout', { method: 'POST' });
+            window.location.href = 'Admin_Login.html';
+        });
+
+        async function loadApps() {
+            try {
+                const res = await fetch('/api/applications');
+                if (res.status === 401) { window.location.href = 'Admin_Login.html'; return; }
+                allApps = await res.json();
+                updateStats();
+                renderTable();
+            } catch {
+                document.getElementById('dashMessage').innerHTML =
+                    '<div class="dash-message error">Failed to load applications. Check your connection.</div>';
+            }
+        }
+
+        async function loadAdminName() {
+            try {
+                const res = await fetch('/api/admin/me');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.username) {
+                        document.getElementById('adminName').textContent = data.username;
+                    }
+                }
+            } catch { /* optional */ }
+        }
+
+        loadAdminName();
+        loadApps();
+    </script>
+</body>
+</html>
